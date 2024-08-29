@@ -27,6 +27,10 @@ jobs:
           OVA_FILE="downloaded_file.ova"
           VBoxManage import $OVA_FILE --vsys 0 --vmname $VM_NAME
           
+          # Disable USB controller
+          VBoxManage modifyvm $VM_NAME --usbehci off
+          VBoxManage modifyvm $VM_NAME --usbxhci off
+          
           # Optimize VM settings for performance
           VBoxManage modifyvm $VM_NAME --cpus 4
           VBoxManage modifyvm $VM_NAME --memory 8192
