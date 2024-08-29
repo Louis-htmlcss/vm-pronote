@@ -10,10 +10,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Install megatools and VirtualBox
+      - name: Install megatools, VirtualBox, and ngrok
         run: |
           sudo apt-get update
           sudo apt-get install -y megatools virtualbox
+          wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz
+          tar xvzf ngrok-v3-stable-linux-amd64.tgz
+          sudo mv ngrok /usr/local/bin
 
       - name: Download file from Mega
         env:
@@ -44,14 +47,19 @@ jobs:
           # Start the VM
           VBoxManage startvm $VM_NAME --type headless
 
-      - name: Get public IP and display server URL
+      - name: Start ngrok tunnel
+        env:
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
         run: |
-          PUBLIC_IP=$(curl -s https://api.ipify.org)
-          echo "Server URL: http://$PUBLIC_IP"
+          ngrok authtoken $NGROK_AUTH_TOKEN
+          ngrok http 80 --log=stdout > ngrok.log &
+          sleep 10
+          NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url')
+          echo "Server URL: $NGROK_URL"
 
       - name: Keep the workflow running
         run: |
-          echo "High-performance VM is running. Server URL: http://$PUBLIC_IP"
+          echo "High-performance VM is running. Server URL: $NGROK_URL"
           while true; do
             sleep 300
             VBoxManage list runningvms | grep "$VM_NAME" > /dev/null 2>&1 || exit 1
