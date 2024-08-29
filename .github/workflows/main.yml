@@ -52,7 +52,7 @@ jobs:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
         run: |
           ngrok authtoken $NGROK_AUTH_TOKEN
-          ngrok http 80 --log=stdout > ngrok.log &
+          ngrok http 81 --log=stdout > ngrok.log &
           sleep 10
           NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url')
           echo "Server URL: $NGROK_URL"
